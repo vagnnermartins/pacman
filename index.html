@@ -11,10 +11,25 @@
     <div id="hud">
       <span id="score">Pontos: 0</span>
       <span id="lives">Vidas: 3</span>
+      <span id="difficulty-label">Médio</span>
+      <button id="restart-btn">Reiniciar</button>
+      <button id="exit-btn">Sair</button>
     </div>
     <canvas id="game" width="280" height="300"></canvas>
     <div id="overlay">
-      <div id="overlay-text">Toque ou pressione uma tecla para começar</div>
+      <div id="overlay-content">
+        <div id="overlay-text">Toque ou pressione uma tecla para começar</div>
+        <div id="ranking-box">
+          <div id="ranking-title">Ranking</div>
+          <ol id="ranking-list"></ol>
+        </div>
+        <div id="difficulty-select">
+          <span>Dificuldade:</span>
+          <button class="diff-btn" data-difficulty="easy">Fácil</button>
+          <button class="diff-btn selected" data-difficulty="medium">Médio</button>
+          <button class="diff-btn" data-difficulty="hard">Difícil</button>
+        </div>
+      </div>
     </div>
     <div id="touch-controls">
       <div></div>

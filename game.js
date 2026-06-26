@@ -11,6 +11,55 @@
   const livesEl = document.getElementById('lives');
   const overlay = document.getElementById('overlay');
   const overlayText = document.getElementById('overlay-text');
+  const restartBtn = document.getElementById('restart-btn');
+  const exitBtn = document.getElementById('exit-btn');
+  const diffButtons = document.querySelectorAll('.diff-btn');
+  const diffSelect = document.getElementById('difficulty-select');
+  const rankingBox = document.getElementById('ranking-box');
+  const rankingList = document.getElementById('ranking-list');
+  const difficultyLabel = document.getElementById('difficulty-label');
+
+  const RANKING_KEY = 'pacman_ranking';
+  function loadRanking() {
+    try {
+      return JSON.parse(localStorage.getItem(RANKING_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+  function addScoreToRanking(value) {
+    const list = loadRanking();
+    list.push(value);
+    list.sort((a, b) => b - a);
+    const top = list.slice(0, 5);
+    localStorage.setItem(RANKING_KEY, JSON.stringify(top));
+    return top;
+  }
+  function renderRanking(currentScore) {
+    const top = addScoreToRanking(currentScore);
+    rankingList.innerHTML = '';
+    let highlighted = false;
+    top.forEach(value => {
+      const li = document.createElement('li');
+      li.textContent = `${value} pts`;
+      if (!highlighted && value === currentScore) {
+        li.classList.add('current');
+        highlighted = true;
+      }
+      rankingList.appendChild(li);
+    });
+  }
+
+  const DIFFICULTIES = {
+    easy: { label: 'Fácil', ghostSpeedMul: 0.65, frightTime: 8 },
+    medium: { label: 'Médio', ghostSpeedMul: 0.78, frightTime: 6 },
+    hard: { label: 'Difícil', ghostSpeedMul: 0.95, frightTime: 4 },
+  };
+  let difficulty = 'medium';
+
+  function updateDifficultyLabel() {
+    difficultyLabel.textContent = DIFFICULTIES[difficulty].label;
+  }
 
   // --- Build maze ---
   function buildMaze() {
@@ -77,7 +126,7 @@
 
   let pac, ghosts, score, lives, frightTimer, running, gameOverState;
   const SPEED = 6.0; // tiles per second
-  const FRIGHT_TIME = 6;
+  const FRIGHT_WARNING_TIME = 2; // seconds left when ghosts start blinking
 
   function resetEntities() {
     pac = {
@@ -168,7 +217,7 @@
         pelletsLeft--;
         score += cell === POWER ? 50 : 10;
         if (cell === POWER) {
-          frightTimer = FRIGHT_TIME;
+          frightTimer = DIFFICULTIES[difficulty].frightTime;
           ghosts.forEach(g => g.frightened = true);
         }
         updateHud();
@@ -239,10 +288,10 @@
       }
     }
     updatePac(dt);
-    const ghostSpeed = SPEED * 0.78;
+    const ghostSpeed = SPEED * DIFFICULTIES[difficulty].ghostSpeedMul;
     for (const g of ghosts) updateGhost(g, dt, g.frightened ? ghostSpeed * 0.6 : ghostSpeed);
     checkCollisions();
-    if (gameOverState) showOverlay();
+    if (gameOverState) showGameOver();
   }
 
   function draw() {
@@ -285,9 +334,15 @@
     ctx.restore();
 
     // ghosts
+    const frightEnding = frightTimer > 0 && frightTimer <= FRIGHT_WARNING_TIME;
+    const blinkOn = frightEnding && Math.floor(performance.now() / 200) % 2 === 0;
     for (const g of ghosts) {
       const gx = g.x * TILE + TILE / 2, gy = g.y * TILE + TILE / 2;
-      ctx.fillStyle = g.frightened ? '#3b3bff' : g.color;
+      if (g.frightened) {
+        ctx.fillStyle = blinkOn ? '#fff' : '#3b3bff';
+      } else {
+        ctx.fillStyle = g.color;
+      }
       ctx.beginPath();
       ctx.arc(gx, gy, TILE / 2 - 1, Math.PI, 0);
       ctx.lineTo(gx + TILE / 2 - 1, gy + TILE / 2 - 1);
@@ -302,11 +357,22 @@
     }
   }
 
-  function showOverlay() {
+  function showMenu() {
     running = false;
-    if (gameOverState === 'win') overlayText.textContent = 'Você venceu! Toque para jogar de novo';
-    else if (gameOverState === 'lose') overlayText.textContent = `Fim de jogo. Pontos: ${score}. Toque para reiniciar`;
-    else overlayText.textContent = 'Toque ou pressione uma tecla para começar';
+    overlayText.textContent = 'Toque ou pressione uma tecla para começar';
+    rankingBox.classList.remove('visible');
+    diffSelect.classList.remove('hidden');
+    overlay.classList.remove('hidden');
+  }
+
+  function showGameOver() {
+    running = false;
+    overlayText.textContent = gameOverState === 'win'
+      ? `Você venceu! Pontos: ${score}`
+      : `Fim de jogo. Pontos: ${score}`;
+    renderRanking(score);
+    rankingBox.classList.add('visible');
+    diffSelect.classList.add('hidden');
     overlay.classList.remove('hidden');
   }
 
@@ -342,6 +408,28 @@
 
   overlay.addEventListener('click', startGame);
 
+  restartBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetGame();
+    overlay.classList.add('hidden');
+    running = true;
+  });
+
+  exitBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    resetGame();
+    showMenu();
+  });
+
+  diffButtons.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      difficulty = btn.dataset.difficulty;
+      diffButtons.forEach(b => b.classList.toggle('selected', b === btn));
+      updateDifficultyLabel();
+    });
+  });
+
   document.querySelectorAll('#touch-controls button').forEach(btn => {
     btn.addEventListener('click', () => {
       pac.nextDir = btn.dataset.dir;
@@ -368,7 +456,8 @@
   }, { passive: true });
 
   // --- Init ---
+  updateDifficultyLabel();
   resetGame();
-  showOverlay();
+  showMenu();
   requestAnimationFrame(loop);
 })();

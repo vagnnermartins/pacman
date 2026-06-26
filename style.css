@@ -1,0 +1,89 @@
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
+#game-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 8px;
+  position: relative;
+}
+
+#hud {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 8px;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+canvas {
+  background: #000;
+  border: 2px solid #1e1eff;
+  width: min(90vw, 420px);
+  height: auto;
+  image-rendering: pixelated;
+}
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.7);
+  text-align: center;
+  padding: 20px;
+  cursor: pointer;
+}
+
+#overlay.hidden {
+  display: none;
+}
+
+#overlay-text {
+  font-size: 16px;
+  max-width: 280px;
+}
+
+#touch-controls {
+  display: grid;
+  grid-template-columns: 56px 56px 56px;
+  grid-template-rows: 56px 56px;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+#touch-controls button {
+  font-size: 22px;
+  background: #1e1eff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  touch-action: none;
+  user-select: none;
+}
+
+#touch-controls button:active {
+  background: #4a4aff;
+}
+
+@media (min-width: 700px) {
+  #touch-controls {
+    opacity: 0.6;
+  }
+}

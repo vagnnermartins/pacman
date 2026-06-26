@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Pac-Man</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="game-wrap">
+    <div id="hud">
+      <span id="score">Pontos: 0</span>
+      <span id="lives">Vidas: 3</span>
+    </div>
+    <canvas id="game" width="280" height="300"></canvas>
+    <div id="overlay">
+      <div id="overlay-text">Toque ou pressione uma tecla para começar</div>
+    </div>
+    <div id="touch-controls">
+      <div></div>
+      <button data-dir="up">▲</button>
+      <div></div>
+      <button data-dir="left">◀</button>
+      <button data-dir="down">▼</button>
+      <button data-dir="right">▶</button>
+    </div>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
